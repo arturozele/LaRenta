@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Información Legal</title>
+ <style>
+/* ==== Body ==== */
+body { 
+  font-family: 'Segoe UI', sans-serif; 
+  margin: 0; 
+  background: linear-gradient(135deg, #2c3e50, #34495e); /* fondo más serio y sobrio */
+  color: #f5f5f5; 
+  line-height: 1.6;
+}
+
+/* ==== Header ==== */
+header { 
+  background: #1a1a1a; 
+  padding: 14px 24px; 
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3); 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+header h1 { 
+  margin: 0; 
+  font-size: 22px; 
+  color: #fff; 
+  font-weight: 600;
+}
+
+/* ==== Menú de botones ==== */
+.menu {
+  display: flex; 
+  align-items: center; 
+  gap: 10px;
+}
+.menu button {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.menu .btn-back {
+  background: #555; 
+  color: #fff;
+}
+.menu .btn-back:hover {
+  background: #777;
+}
+
+/* ==== Contenedor principal ==== */
+.container { 
+  padding: 30px; 
+  max-width: 1000px; 
+  margin: 20px auto; 
+}
+
+/* ==== Título del apartado ==== */
+h2 { 
+  color: #f5f5f5; 
+  text-align: center; 
+  margin-bottom: 25px; 
+  font-size: 26px;
+  font-weight: 600;
+}
+
+/* ==== Tarjetas de información ==== */
+.card { 
+  background: rgba(255, 255, 255, 0.05); /* efecto glass sutil */
+  border-radius: 14px; 
+  padding: 20px; 
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4); 
+  margin-bottom: 20px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.45);
+}
+
+/* ==== Párrafos ==== */
+p { 
+  color: #ddd; 
+  line-height: 1.8; 
+  margin-bottom: 14px;
+  font-size: 15px;
+}
+
+/* ==== Enlaces ==== */
+p a {
+  color: #3498db;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+p a:hover {
+  color: #5dade2;
+  text-decoration: underline;
+}
+</style>
+
+</head>
+<body>
+  <header>
+    <h1>Información Legal</h1>
+    <div class="menu">
+      <button class="btn-back" onclick="volver()">Volver</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <h2>Políticas y Avisos Legales</h2>
+    <div class="card">
+      <p><strong>Propósito:</strong> Esta sección contiene toda la información legal relacionada con el uso de la aplicación y las responsabilidades de los usuarios.</p>
+      <p><strong>Términos de Uso:</strong> Al utilizar esta aplicación, aceptas cumplir con todas las normas, políticas y regulaciones establecidas por la empresa.</p>
+      <p><strong>Protección de Datos:</strong> Todos los datos de usuarios se manejan conforme a las leyes de privacidad y se almacenan de manera segura en Firebase.</p>
+      <p><strong>Contacto Legal:</strong> Para cualquier consulta legal puedes enviar un correo a soporte@licoreria.com.</p>
+    </div>
+  </div>
+
+  <script>
+    function volver(){
+      // Redirige al panel principal del admin
+      window.location.href = "menu_admin.html";
+    }
+  </script>
+</body>
+</html>

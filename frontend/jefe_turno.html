@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Jefe de Turno - Supermercado</title>
+
+<style>
+:root{
+  --primary:#D32F2F;        /* Rojo principal */
+  --primary-dark:#B71C1C;   /* Rojo oscuro */
+  --accent:#FFCDD2;         /* Rojo claro */
+  --accent-dark:#EF9A9A;
+  --bg:#FFF5F5;             /* Fondo rosado claro típico de La Colonia */
+  --card:#FFFFFF;
+  --muted:#6B7280;
+  --text:#111827;
+  --glass: rgba(255,255,255,0.72);
+  --shadow: 0 10px 30px rgba(16,24,40,0.06);
+  --success: #2E7D32;
+  --warning: #F59E0B;
+}
+
+/* GLOBAL */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:"Poppins",system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+  background:linear-gradient(180deg,#fff 0%, var(--bg) 100%);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+}
+
+/* HEADER */
+header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:18px 24px;
+  background:linear-gradient(90deg,var(--primary),var(--primary-dark));
+  color:#fff;
+  box-shadow:var(--shadow);
+  position:sticky; 
+  top:0; 
+  z-index:40;
+}
+
+/* Logo opcional */
+.header-left{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+
+.logo{
+  width:44px;
+  height:44px;
+  border-radius:10px;
+  background:linear-gradient(180deg,rgba(255,255,255,0.25),rgba(255,255,255,0.08));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:700;
+  font-size:18px;
+  box-shadow:inset 0 -6px 18px rgba(255,255,255,0.10);
+}
+
+/* Título centrado */
+.header-title{
+  flex:1;
+  text-align:center;
+  font-size:22px;
+  font-weight:800;
+  letter-spacing:0.5px;
+}
+
+
+
+/* LOGOUT BTN */
+.logout-btn {
+  padding:8px 14px;
+  border-radius:10px;
+  font-weight:600;
+  border:2px solid #fff;
+  background:#fff;
+  color:var(--primary-dark);
+  cursor:pointer;
+  transition:0.20s;
+}
+.logout-btn:hover {
+  background:transparent;
+  color:#fff;
+  transform:scale(1.07);
+}
+
+/* LAYOUT */
+.container{max-width:1200px;margin:22px auto;padding:0 18px}
+.grid{display:grid;grid-template-columns:1fr 380px;gap:20px}
+@media (max-width:980px){ .grid{grid-template-columns:1fr} }
+
+/* CARD */
+.card{
+  background:var(--card);
+  border-radius:14px;
+  padding:16px;
+  box-shadow:var(--shadow);
+  border:1px solid rgba(15,23,42,0.03);
+}
+
+/* CONTROLS */
+.controls{display:flex;gap:12px;align-items:center}
+.controls .control{display:flex;flex-direction:column;gap:6px}
+.controls input[type=date], .controls select{
+  padding:10px 12px;border-radius:10px;border:1px solid #f2d0d0;background:#fff;
+  outline:none;font-size:14px;color:var(--text);
+  box-shadow:0 6px 18px rgba(211,47,47,0.05);
+}
+.btn{
+  padding:9px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:700;
+}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-dark)}
+.btn-add{background:var(--success);color:#fff}
+.btn-edit{background:var(--warning);color:#fff}
+.btn-delete{background:var(--primary);color:#fff}
+
+/* KPI ROW */
+.kpis{display:flex;gap:12px;margin-top:12px;flex-wrap:wrap}
+.kpi{
+  flex:1;min-width:200px;padding:16px;border-radius:12px;
+  background:linear-gradient(180deg,#fff,#FFF6F6);
+  display:flex;flex-direction:column;gap:8px;
+  border:1px solid rgba(211,47,47,0.1);
+}
+.kpi h3{margin:0;font-size:13px;color:var(--muted)}
+.kpi .value{font-size:22px;font-weight:800;color:var(--primary-dark)}
+.kpi .sub{font-size:13px;color:var(--muted)}
+
+/* TABLES */
+.table-wrap{margin-top:14px;overflow:auto;border-radius:8px}
+table{width:100%;border-collapse:separate;border-spacing:0 8px;font-size:14px}
+thead th{
+  background:var(--primary);
+  color:#fff;padding:12px;border-radius:8px;text-align:left;font-weight:700
+}
+tbody td{
+  background:#fff;padding:12px;border-radius:8px;vertical-align:middle;
+  border:1px solid rgba(0,0,0,0.02);
+}
+tbody tr:hover td{
+  transform:translateY(-1px);
+  box-shadow:0 6px 18px rgba(211,47,47,0.1);
+}
+
+/* BADGES */
+.low{color:var(--primary-dark);font-weight:800}
+
+/* RIGHT COLUMN */
+.aside-col .card + .card{margin-top:14px}
+
+/* MODAL */
+.modal-overlay{
+  position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.45);z-index:60
+}
+.modal{
+  width:380px;background:#fff;border-radius:12px;padding:18px;
+  box-shadow:0 12px 40px rgba(0,0,0,0.35)
+}
+.modal h3{margin:0 0 8px 0;color:var(--primary-dark)}
+.modal label{display:block;font-size:13px;color:var(--muted);margin-top:8px}
+.modal input, .modal select, .modal textarea{
+  width:100%;padding:10px;border-radius:8px;border:1px solid #f2d0d0;margin-top:6px
+}
+
+/* RESPONSIVE */
+@media (max-width:520px){
+  .controls{flex-direction:column}
+  .kpis{flex-direction:column}
+}
+
+.logout-btn {
+  background: #fff;
+  color: var(--primary-dark);
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: 2px solid #fff;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  transition: all .2s ease;
+}
+
+
+.logout-btn:hover {
+  transform: scale(1.05);
+  background: var(--rojo);
+  color: #fff;
+}
+
+</style>
+
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="logo">JT</div>
+  </div>
+
+  <div class="header-title">
+    PANEL — JEFE DE TURNO
+  </div>
+
+  <div class="header-actions">
+    <button class="logout-btn" onclick="signOutUser()">Cerrar sesión</button>
+  </div>
+</header>
+
+
+<div class="container">
+  <div class="grid">
+    <!-- MAIN -->
+    <main>
+      <div class="card">
+        <div class="controls" style="align-items:center;justify-content:space-between;gap:18px">
+          <div class="control" style="flex:1">
+            <label class="small-muted">Fecha</label>
+            <input id="dateInput" type="date" />
+          </div>
+
+          <div class="control" style="width:220px">
+            <label class="small-muted">Turno</label>
+            <select id="shiftSelect">
+              <option value="6am-2pm">6am - 2pm</option>
+              <option value="2pm-10pm">2pm - 10pm</option>
+            </select>
+          </div>
+
+          <div style="width:140px">
+            <label class="small-muted">&nbsp;</label>
+            <button id="btn-refresh" class="btn btn-primary" style="width:100%">Actualizar</button>
+          </div>
+        </div>
+
+        <div class="kpis" style="margin-top:16px">
+          <div class="kpi">
+            <h3>Total vendido (turno)</h3>
+            <div class="value" id="kpi-total">C$ 0.00</div>
+            <div class="sub small-muted" id="kpi-sales-count">0 ventas</div>
+          </div>
+
+          <div class="kpi">
+            <h3>Productos más movidos (TOP 5)</h3>
+            <div id="kpi-top-products" class="sub small-muted">—</div>
+          </div>
+
+          <div class="kpi">
+            <h3>Productos con stock bajo</h3>
+            <div class="value" id="kpi-low-count">0</div>
+            <div class="sub small-muted">Crit: ≤ 10 unidades</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <h3 style="margin:0 0 6px 0">Productos más movidos</h3>
+        <div class="small-muted">Top por cantidad vendida en el turno seleccionado</div>
+        <div class="table-wrap">
+          <table id="topProductsTable" aria-live="polite">
+            <thead><tr><th>Producto</th><th>Cantidad</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <h3 style="margin:0 0 6px 0">Productos con stock bajo</h3>
+        <div class="small-muted">Productos cuyo stock ≤ 10 unidades</div>
+        <div class="table-wrap">
+          <table id="lowStockTable" aria-live="polite">
+            <thead><tr><th>Producto</th><th>Categoría</th><th>Stock</th><th>Min</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <!-- ASIDE -->
+    <aside class="aside-col">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <h3 style="margin:0">Empleados asignados</h3>
+            <div class="small-muted">Solo cajeros asignados a este turno</div>
+          </div>
+          <div>
+            <button class="btn btn-add" onclick="openAddEmployeeModal()">+ Agregar</button>
+          </div>
+        </div>
+
+        <div class="table-wrap" style="margin-top:12px">
+          <table id="employeesTable" class="employees-table" aria-live="polite">
+            <thead><tr><th>Nombre</th><th>Turno</th><th>Acciones</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <h3 style="margin:0 0 6px 0">Resumen rápido</h3>
+        <div class="small-muted">Total y número de ventas en el turno</div>
+        <div style="margin-top:12px">
+          <div style="display:flex;gap:12px;align-items:center">
+            <div style="flex:1">
+              <div class="small-muted">Total</div>
+              <div id="summary-total" style="font-weight:800;font-size:16px">C$ 0.00</div>
+            </div>
+            <div style="width:110px">
+              <div class="small-muted">Ventas</div>
+              <div id="summary-count" style="font-weight:800;font-size:16px">0</div>
+            </div>
+            <div style="width:150px">
+              <div class="small-muted">Promedio</div>
+              <div id="summary-avg" style="font-weight:800;font-size:16px">C$ 0.00</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h3 id="modalTitle">Modal</h3>
+    <div id="modalBody"></div>
+    <div style="display:flex;gap:10px;margin-top:14px">
+      <button class="btn" style="flex:1;border-radius:10px;border:1px solid #e6eef8;background:#fff" onclick="closeModal()">Cancelar</button>
+      <button id="modalActionBtn" class="btn btn-primary" style="flex:1;display:none">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCRIPTS -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs, getDoc, addDoc, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAc9Ci4KKE9HvkOotMit3YTHx1y0SOwC-Q",
+  authDomain: "licoreria-app-5d82b.firebaseapp.com",
+  projectId: "licoreria-app-5d82b",
+  storageBucket: "licoreria-app-5d82b.firebasestorage.app",
+  messagingSenderId: "880767387677",
+  appId: "1:880767387677:web:453f885262679bff705ef4",
+  measurementId: "G-LQVP3Q4VFH"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+/* ————— VERIFICAR SESIÓN ACTIVA ————— */
+onAuthStateChanged(auth, user => {
+  if (!user) {
+    window.location.href = "index.html";
+  }
+});
+
+/* ————— FUNCIÓN LOGOUT ————— */
+window.signOutUser = function () {
+  if (confirm("¿Deseas cerrar sesión?")) {
+    signOut(auth)
+      .then(() => {
+        window.location.href = "index.html";
+      })
+      .catch(err => {
+        console.error("Error en signOut:", err);
+        alert("Error al cerrar sesión");
+      });
+  }
+};
+
+/* UI refs */
+const modal = document.getElementById('modal');
+const modalTitle = document.getElementById('modalTitle');
+const modalBody = document.getElementById('modalBody');
+const modalActionBtn = document.getElementById('modalActionBtn');
+
+function openModal(title, bodyHtml, actionLabel=null, actionHandler=null){
+  modalTitle.innerText = title;
+  modalBody.innerHTML = bodyHtml;
+  if(actionLabel && typeof actionHandler === 'function'){
+    modalActionBtn.style.display = 'inline-block';
+    modalActionBtn.innerText = actionLabel;
+    modalActionBtn.onclick = () => actionHandler();
+  } else {
+    modalActionBtn.style.display = 'none';
+    modalActionBtn.onclick = null;
+  }
+  modal.style.display = 'flex';
+}
+function closeModal(){ modal.style.display = 'none'; }
+
+/* utils */
+function escapeHtml(s){ if(s==null) return ''; return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s){ if(s==null) return ''; return String(s).replace(/['"]/g,c=>c==='\"'?'&quot;':'&#39;'); }
+function formatCurrency(n){ return 'C$ '+Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+/* refs */
+const dateInput = document.getElementById('dateInput');
+const shiftSelect = document.getElementById('shiftSelect');
+const btnRefresh = document.getElementById('btn-refresh');
+
+const kpiTotalEl = document.getElementById('kpi-total');
+const kpiSalesCountEl = document.getElementById('kpi-sales-count');
+const kpiTopProductsEl = document.getElementById('kpi-top-products');
+const kpiLowCountEl = document.getElementById('kpi-low-count');
+
+const topProductsTableBody = document.querySelector('#topProductsTable tbody');
+const lowStockTableBody = document.querySelector('#lowStockTable tbody');
+const employeesTableBody = document.querySelector('#employeesTable tbody');
+
+const summaryTotal = document.getElementById('summary-total');
+const summaryCount = document.getElementById('summary-count');
+const summaryAvg = document.getElementById('summary-avg');
+
+/* init date */
+(function initDate(){
+  const today = new Date();
+  const y = today.getFullYear(), m = String(today.getMonth()+1).padStart(2,'0'), d = String(today.getDate()).padStart(2,'0');
+  dateInput.value = `${y}-${m}-${d}`;
+})();
+
+/* events */
+btnRefresh.addEventListener('click', loadAll);
+dateInput.addEventListener('change', loadAll);
+shiftSelect.addEventListener('change', loadAll);
+
+/* main loaders */
+async function loadLowStock(){
+  lowStockTableBody.innerHTML = '<tr><td colspan="4" class="small-muted">Cargando...</td></tr>';
+  try{
+    const snap = await getDocs(collection(db,'productos'));
+    const products = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // consider minStock field or fallback to 10
+    const low = products.filter(p => (p.activo === undefined || p.activo) && Number(p.stock || 0) <= Number(p.minStock ?? 10));
+    kpiLowCountEl.innerText = low.length;
+    if(low.length === 0){
+      lowStockTableBody.innerHTML = '<tr><td colspan="4" class="small-muted">Ninguno</td></tr>';
+      return;
+    }
+    lowStockTableBody.innerHTML = '';
+    low.forEach(p=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${escapeHtml(p.nombre||'—')}</td>
+                      <td class="small-muted">${escapeHtml(p.categoria||'—')}</td>
+                      <td class="low">${p.stock}</td>
+                      <td>${p.minStock ?? 10}</td>`;
+      lowStockTableBody.appendChild(tr);
+    });
+  }catch(err){
+    console.error(err);
+    lowStockTableBody.innerHTML = '<tr><td colspan="4" class="small-muted">Error cargando</td></tr>';
+  }
+}
+
+async function loadEmployeesForShift(turno){
+  employeesTableBody.innerHTML = '<tr><td colspan="3" class="small-muted">Cargando...</td></tr>';
+  try{
+    const snap = await getDocs(collection(db,'usuarios'));
+    const users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // filter role 'Empleado' and turno exact match (uses your turno values)
+    const filtered = users.filter(u => (u.rol === 'Empleado' || u.rol === 'Cajero') && u.turno === turno);
+    if(filtered.length === 0){
+      employeesTableBody.innerHTML = '<tr><td colspan="3" class="small-muted">No hay cajeros asignados</td></tr>';
+      return;
+    }
+    employeesTableBody.innerHTML = '';
+    filtered.forEach(u=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${escapeHtml(u.nombre||'—')}</td>
+                      <td class="small-muted">${escapeHtml(u.turno||'—')}</td>
+                      <td class="actions">
+                        <button class="btn btn-edit btn-small" onclick="openEditEmployeeModal('${u.id}','${escapeAttr(u.nombre||'')}','${escapeAttr(u.correo||'')}','${escapeAttr(u.turno||'')}')">Editar</button>
+                        <button class="btn btn-delete btn-small" onclick="deleteEmployee('${u.id}')">Eliminar</button>
+                      </td>`;
+      employeesTableBody.appendChild(tr);
+    });
+  }catch(err){
+    console.error(err);
+    employeesTableBody.innerHTML = '<tr><td colspan="3" class="small-muted">Error cargando</td></tr>';
+  }
+}
+
+/* add / edit / delete employees */
+window.openAddEmployeeModal = () => {
+  openModal('Agregar Cajero', `
+    <label>Nombre</label><input id="empName" type="text"/>
+    <label>Correo</label><input id="empEmail" type="email"/>
+    <label>Turno</label>
+    <select id="empShift">
+      <option value="6am-2pm">6am - 2pm</option>
+      <option value="2pm-10pm">2pm - 10pm</option>
+    </select>
+  `, 'Guardar', async ()=>{
+    const nombre = document.getElementById('empName').value.trim();
+    const correo = document.getElementById('empEmail').value.trim();
+    const turno = document.getElementById('empShift').value;
+    if(!nombre || !correo) return alert('Completa nombre y correo');
+    await addDoc(collection(db,'usuarios'), { nombre, correo, rol: 'Empleado', turno, createdAt: new Date() });
+    closeModal();
+    loadEmployeesForShift(shiftSelect.value);
+  });
+};
+
+window.openEditEmployeeModal = (id,nombre,correo,turno) => {
+  openModal('Editar Cajero', `
+    <label>Nombre</label><input id="empName" type="text" value="${nombre}"/>
+    <label>Correo</label><input id="empEmail" type="email" value="${correo}"/>
+    <label>Turno</label>
+    <select id="empShift">
+      <option ${turno==='6am-2pm'?'selected':''} value="6am-2pm">6am - 2pm</option>
+      <option ${turno==='2pm-10pm'?'selected':''} value="2pm-10pm">2pm - 10pm</option>
+    </select>
+  `, 'Guardar', async ()=>{
+    const newName = document.getElementById('empName').value.trim();
+    const newEmail = document.getElementById('empEmail').value.trim();
+    const newShift = document.getElementById('empShift').value;
+    if(!newName || !newEmail) return alert('Completa nombre y correo');
+    await updateDoc(doc(db,'usuarios',id), { nombre: newName, correo: newEmail, turno: newShift, updatedAt: new Date() });
+    closeModal();
+    loadEmployeesForShift(shiftSelect.value);
+  });
+};
+
+window.deleteEmployee = async (id) => {
+  if(!confirm('Eliminar cajero?')) return;
+  await deleteDoc(doc(db,'usuarios',id));
+  loadEmployeesForShift(shiftSelect.value);
+};
+
+/* sales for shift */
+async function loadSalesForShift(dateStr, turno){
+  // compute timeframe
+  const [y,m,d] = dateStr.split('-').map(Number);
+  let start, end;
+  if(turno === '6am-2pm'){ start = new Date(y,m-1,d,6,0,0); end = new Date(y,m-1,d,14,0,0); }
+  else { start = new Date(y,m-1,d,14,0,0); end = new Date(y,m-1,d,22,0,0); }
+
+  let total = 0, salesCount = 0, productCounts = {};
+  try{
+    const ventasSnap = await getDocs(collection(db,'ventas'));
+    const ventas = ventasSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    for(const v of ventas){
+      const fv = v.fechaVenta;
+      let saleDate = null;
+      if(fv?.seconds) saleDate = new Date(fv.seconds * 1000);
+      else if(fv instanceof Date) saleDate = fv;
+      else if(typeof fv === 'string') saleDate = new Date(fv);
+      if(!saleDate) continue;
+      if(saleDate < start || saleDate > end) continue;
+      salesCount++;
+      if(Array.isArray(v.productos)){
+        for(const p of v.productos){
+          total += Number(p.precioUnitario || 0) * Number(p.cantidad || 0);
+          const idProd = String(p.idProducto);
+          if(productCounts[idProd]) productCounts[idProd].cantidad += Number(p.cantidad || 0);
+          else productCounts[idProd] = { cantidad: Number(p.cantidad || 0), nombre: p.nombre || idProd };
+        }
+      }
+    }
+
+    /* KPIs */
+    kpiTotalEl.innerText = formatCurrency(total);
+    kpiSalesCountEl.innerText = `${salesCount} ventas`;
+    summaryTotal.innerText = formatCurrency(total);
+    summaryCount.innerText = salesCount;
+    summaryAvg.innerText = formatCurrency(salesCount ? (total / salesCount) : 0);
+
+    /* TOP PRODUCTS */
+    const entries = Object.entries(productCounts).sort((a,b) => b[1].cantidad - a[1].cantidad);
+    topProductsTableBody.innerHTML = '';
+    if(entries.length === 0){
+      topProductsTableBody.innerHTML = '<tr><td colspan="2" class="small-muted">No hay ventas en este turno</td></tr>';
+      kpiTopProductsEl.innerText = '—';
+    } else {
+      const topN = entries.slice(0,5);
+      topN.forEach(([id, info])=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${escapeHtml(info.nombre)}</td><td>${info.cantidad}</td>`;
+        topProductsTableBody.appendChild(tr);
+      });
+      const topLabels = topN.map(([id, info]) => `${escapeHtml(info.nombre)} (${info.cantidad})`);
+      kpiTopProductsEl.innerText = topLabels.join(' • ');
+    }
+
+  }catch(err){
+    console.error(err);
+    kpiTotalEl.innerText = 'C$ 0.00';
+    kpiSalesCountEl.innerText = '0 ventas';
+    topProductsTableBody.innerHTML = '<tr><td colspan="2" class="small-muted">Error cargando</td></tr>';
+  }
+}
+
+async function loadAll(){
+  const dateStr = dateInput.value;
+  const turno = shiftSelect.value;
+  await loadLowStock();
+  await loadEmployeesForShift(turno);
+  await loadSalesForShift(dateStr, turno);
+}
+
+/* initial load */
+loadAll();
+
+</script>
+</body>
+</html>

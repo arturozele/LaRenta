@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Administrador General</title>
+
+<style>
+:root {
+  --rojo: #D32F2F;
+  --rojo-oscuro: #B71C1C;
+  --gris-claro: #F5F5F5;
+  --texto: #1E1E1E;
+}
+* { box-sizing: border-box; margin:0; padding:0; font-family: "Poppins", sans-serif; }
+
+/* ===== BODY ===== */
+body {
+  background: linear-gradient(135deg,#fff5f5,#fffaf9);
+  color: var(--texto);
+}
+
+/* ===== HEADER ===== */
+header {
+  background: linear-gradient(90deg,#E57373,#D32F2F);
+  color:#fff;
+  padding:15px 30px;
+  font-size:26px;
+  font-weight:600;
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  position:relative;
+  box-shadow:0 6px 15px rgba(0,0,0,0.1);
+}
+header span {
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  text-align:center;
+}
+.header-buttons {
+  display:flex; gap:12px;
+}
+.logout-btn {
+  padding:6px 12px;
+  font-size:13px;
+  border-radius:12px;
+  border:2px solid white;
+  font-weight:600;
+  cursor:pointer;
+  background:#fff;
+  color:var(--rojo-oscuro);
+  transition:transform 0.2s, background 0.3s;
+}
+.logout-btn:hover {
+  transform:scale(1.05);
+  background:var(--rojo-oscuro);
+  color:#fff;
+}
+
+/* ===== CARDS ===== */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 25px;
+  padding: 25px;
+}
+.card {
+  padding: 25px;
+  border-radius: 22px;
+  background: rgba(255,255,255,0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow:0 4px 18px rgba(0,0,0,0.1);
+  cursor:pointer;
+  text-align:center;
+  transition: transform .3s, box-shadow .3s, border .3s;
+  border: 2px solid transparent;
+}
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 25px rgba(211,47,47,0.35);
+  border-color: var(--rojo);
+}
+.card-icon {
+  font-size: 45px;
+  margin-bottom: 10px;
+}
+.card h3 {
+  color: var(--rojo-oscuro);
+  margin:10px 0 8px;
+  font-size: 18px;
+  font-weight:600;
+}
+.card p {
+  color:#444;
+  font-size:14px;
+}
+
+/* ===== TITULOS DE SECCIONES ===== */
+.titulo-seccion {
+  font-size:24px;
+  margin-bottom:15px;
+  font-weight:600;
+  color: var(--rojo-oscuro);
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+/* ===== TABLAS ===== */
+table {
+  width:100%;
+  margin-top:20px;
+  border-collapse: separate;
+  border-spacing:0 10px;
+}
+th, td {
+  background:#fff;
+  padding:14px;
+  border-radius:10px;
+  text-align:left;
+}
+th { background:var(--rojo); color:white; }
+
+/* ===== FILAS & HOVER ===== */
+.fila-producto, .fila-proveedor {
+  transition: transform .15s, box-shadow .15s;
+}
+.fila-producto:hover, .fila-proveedor:hover {
+  transform: scale(1.01);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* ===== BOTONES ===== */
+.btn-primary, .btn-nuevo {
+  background: var(--rojo);
+  color:#fff;
+  border:none;
+  padding:10px 16px;
+  border-radius:12px;
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  margin-bottom:15px;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  box-shadow: 0 4px 12px rgba(211,47,47,0.25);
+  transition: background .3s, transform .2s;
+}
+.btn-primary:hover, .btn-nuevo:hover {
+  background: var(--rojo-oscuro);
+  transform: translateY(-2px);
+}
+
+.btn-small {
+  padding:6px 10px;
+  font-size:12px;
+  border-radius:8px;
+}
+
+.btn-comprar {
+  padding: 8px 16px;
+  background: var(--rojo);
+  color: #fff;
+  border:none;
+  border-radius:10px;
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+  transition: background .3s, transform .15s;
+  box-shadow:0 3px 10px rgba(211,47,47,0.3);
+}
+.btn-comprar:hover { background:var(--rojo-oscuro); transform:translateY(-2px); }
+
+
+.btn-secondary {
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 2px solid #D32F2F;
+  background: #fff;
+  color: #D32F2F;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-secondary:hover {
+  background: #D32F2F;
+  color: #fff;
+  transform: scale(1.05);
+}
+.btn-accion {
+  border:none;
+  cursor:pointer;
+  font-size:18px;
+  padding:6px;
+  margin-right:8px;
+  border-radius:50%;
+  width:34px;
+  height:34px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition: background .3s, transform .2s;
+}
+.btn-accion.editar { background:#ffecb3; color:#b26a00; }
+.btn-accion.editar:hover { background:#ffca28; transform:translateY(-2px); }
+.btn-accion.eliminar { background:#ffcdd2; color:#b71c1c; }
+.btn-accion.eliminar:hover { background:#e57373; color:#fff; transform:translateY(-2px); }
+.acciones { display:flex; align-items:center; }
+
+/* ===== BOTONES DE MESES / REPORTES ===== */
+.mes-btn {
+  padding:12px 18px;
+  background: linear-gradient(135deg,var(--rojo),var(--rojo-oscuro));
+  color:#fff;
+  border:none;
+  border-radius:14px;
+  cursor:pointer;
+  font-weight:600;
+  font-size:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 4px 12px rgba(211,47,47,0.25);
+  transition: transform .25s, box-shadow .25s, background .25s;
+}
+.mes-btn:hover { transform:translateY(-4px); background: linear-gradient(135deg,var(--rojo-oscuro),var(--rojo)); box-shadow:0 8px 18px rgba(183,28,28,0.4);}
+.mes-btn:active { transform:scale(0.95); box-shadow:0 3px 6px rgba(183,28,28,0.3);}
+.mes-btn.active { background: var(--rojo-oscuro); box-shadow:0 0 0 3px rgba(211,47,47,0.4); transform:translateY(-2px); }
+
+#resultadoMes { animation: fadeIn .3s ease both; }
+@keyframes fadeIn { from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+/* ===== MODALES ===== */
+.modal-overlay {
+  position:fixed; inset:0;
+  background: rgba(0,0,0,0.4);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+}
+.modal {
+  background:#fff;
+  padding:18px;
+  border-radius:12px;
+  width:340px;
+  max-width:95%;
+}
+.modal h3 { margin-top:0; }
+.modal input, .modal select, .modal textarea {
+  width:100%; padding:8px; margin-bottom:8px;
+  border:1px solid #ddd; border-radius:8px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width:768px){
+  .header-buttons { flex-direction:column; gap:8px; }
+  .cards { grid-template-columns: 1fr; padding:15px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <span>Administrador General</span>
+  <div class="header-buttons">
+   <button class="logout-btn" onclick="signOutUser()">Cerrar sesión</button>
+  </div>
+</header>
+
+<div class="cards">
+
+  <div class="card card-red" onclick="openSection('compras')">
+    <div class="card-icon">🛒</div>
+    <h3>Gestión de Compras</h3>
+    <p>Comprar productos y reabastecer inventario.</p>
+  </div>
+
+  <div class="card card-red" onclick="openSection('proveedores')">
+    <div class="card-icon">📦</div>
+    <h3>Gestión de Proveedores</h3>
+    <p>Registrar, editar o eliminar proveedores.</p>
+  </div>
+
+  <div class="card card-red" onclick="openSection('gerentes')">
+    <div class="card-icon">👔</div>
+    <h3>Gestión de Gerentes</h3>
+    <p>Administrar gerentes de sucursal.</p>
+  </div>
+
+  <div class="card card-red" onclick="openSection('reportes')">
+    <div class="card-icon">📊</div>
+    <h3>Reportes Mensuales</h3>
+    <p>Ver ventas y ganancias.</p>
+  </div>
+
+</div>
+
+
+<div id="content" style="margin:20px;"></div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3 id="modal-title"></h3>
+    <div id="modal-body"></div>
+    <button class="btn-secondary" onclick="closeModal()">Cerrar</button>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs, getDoc, addDoc, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAc9Ci4KKE9HvkOotMit3YTHx1y0SOwC-Q",
+  authDomain: "licoreria-app-5d82b.firebaseapp.com",
+  projectId: "licoreria-app-5d82b",
+  storageBucket: "licoreria-app-5d82b.firebasestorage.app",
+  messagingSenderId: "880767387677",
+  appId: "1:880767387677:web:453f885262679bff705ef4",
+  measurementId: "G-LQVP3Q4VFH"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+/* ————— VERIFICAR SESIÓN ACTIVA ————— */
+onAuthStateChanged(auth, user => {
+  if (!user) {
+    window.location.href = "index.html";
+  }
+});
+
+/* ————— FUNCIÓN LOGOUT ————— */
+window.signOutUser = function () {
+  if (confirm("¿Deseas cerrar sesión?")) {
+    signOut(auth)
+      .then(() => {
+        window.location.href = "index.html";
+      })
+      .catch(err => {
+        console.error("Error en signOut:", err);
+        alert("Error al cerrar sesión");
+      });
+  }
+};
+// === SECCIONES ===
+window.openSection = async (type) => {
+  let html = "";
+  const content = document.getElementById("content");
+
+  if (type === "compras") {
+  const snapshot = await getDocs(collection(db, "productos"));
+  html = `
+    <h2 class="titulo-seccion">🛒 Gestión de Compras</h2>
+
+    <table class="tabla-compras">
+      <tr>
+        <th>Producto</th>
+        <th>Stock Actual</th>
+        <th>Comprar</th>
+      </tr>
+  `;
+
+  snapshot.forEach(p => {
+    const data = p.data();
+    html += `
+      <tr class="fila-producto">
+        <td>${data.nombre}</td>
+        <td>${data.stock}</td>
+        <td>
+          <button class="btn-comprar" 
+            onclick="openBuyModal('${p.id}','${data.nombre}',${data.precioCompra},${data.precioVenta},${data.stock})">
+            Comprar
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+
+  html += `</table>`;
+}
+
+
+ if (type === "proveedores") {
+  const snapshot = await getDocs(collection(db, "proveedores"));
+
+  html = `
+    <h2 class="titulo-seccion">📦 Gestión de Proveedores</h2>
+
+    <button class="btn-nuevo" onclick="openProviderModal()">
+      <span>＋</span> Nuevo Proveedor
+    </button>
+
+    <table class="tabla-proveedores">
+      <tr>
+        <th>Nombre</th>
+        <th>Teléfono</th>
+        <th>Acciones</th>
+      </tr>
+  `;
+
+  snapshot.forEach(p => {
+    const data = p.data();
+
+    html += `
+      <tr class="fila-proveedor">
+        <td>${data.nombre}</td>
+        <td>${data.telefono}</td>
+        <td class="acciones">
+          
+          <!-- BOTÓN EDITAR -->
+          <button class="btn-accion editar" 
+            onclick="editProvider('${p.id}','${data.nombre}','${data.telefono}')">
+            ✏️
+          </button>
+
+          <!-- BOTÓN ELIMINAR -->
+          <button class="btn-accion eliminar" 
+            onclick="deleteProvider('${p.id}')">
+            🗑️
+          </button>
+
+        </td>
+      </tr>
+    `;
+  });
+
+  html += `</table>`;
+}
+
+
+ if (type === "gerentes") {
+  const snapshot = await getDocs(collection(db, "usuarios"));
+
+  html = `
+    <h2 class="titulo-seccion">👔 Gestión de Gerentes</h2>
+
+    <button class="btn-nuevo" onclick="openManagerModal()">
+      <span>＋</span> Nuevo Gerente
+    </button>
+
+    <table class="tabla-proveedores">
+      <tr>
+        <th>Nombre</th>
+        <th>Correo</th>
+        <th>Rol</th>
+        <th>Acciones</th>
+      </tr>
+  `;
+
+  snapshot.forEach(u => {
+    const data = u.data();
+
+    if (data.rol === "Gerente") {
+      html += `
+        <tr class="fila-proveedor">
+          <td>${data.nombre}</td>
+          <td>${data.correo}</td>
+          <td>${data.rol}</td>
+          <td class="acciones">
+
+            <!-- BOTÓN ELIMINAR -->
+            <button class="btn-accion eliminar"
+              onclick="deleteManager('${u.id}')">
+              🗑️
+            </button>
+
+          </td>
+        </tr>
+      `;
+    }
+  });
+
+  html += `</table>`;
+}
+
+
+  // ===========================
+  //        REPORTES DINÁMICOS
+  // ===========================
+ if(type === "reportes"){
+  const ventasSnapshot = await getDocs(collection(db,"ventas"));
+  let reportes = {};
+
+  // Recorremos todas las ventas
+  for(const v of ventasSnapshot.docs){
+    const ventaData = v.data();
+    if(!ventaData.fechaVenta || !ventaData.productos) continue;
+
+    // Convertimos la fecha correctamente
+    const fecha = ventaData.fechaVenta.toDate 
+                  ? ventaData.fechaVenta.toDate() 
+                  : new Date(ventaData.fechaVenta.seconds * 1000);
+    const mes = fecha.getMonth() + 1;
+
+    // Recorremos los productos de la venta
+    for(const p of ventaData.productos){
+      try {
+        const prodSnap = await getDoc(doc(db,"productos",p.idProducto));
+        const precioCompra = prodSnap.data()?.precioCompra || 0;
+        const ganancia = (p.precioUnitario - precioCompra) * p.cantidad;
+
+        reportes[mes] = (reportes[mes] || 0) + ganancia;
+      } catch(e){
+        console.error("Error al obtener producto:", p.idProducto, e);
+      }
+    }
+  }
+
+  console.log("Reporte final:", reportes); // Para depuración
+
+  const mesesNombre = [
+    "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+    "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
+  ];
+
+  html = `
+    <h2 class="titulo-seccion">📊 Reportes Mensuales</h2>
+
+    <div id="mesesContainer" style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:15px;">
+      ${mesesNombre.map((mes,n)=>`
+        <button class="mes-btn" data-mes="${n+1}">
+          ${mes}
+        </button>
+      `).join('')}
+    </div>
+
+    <div id="resultadoMes"
+      style="padding:15px; background:white; border-radius:10px; border:1px solid #ccc;">
+      <p>Selecciona un mes para ver la ganancia estimada.</p>
+    </div>
+  `;
+
+  // Insertamos el HTML
+  content.innerHTML = html;
+
+  // Agregamos los eventos a los botones
+  document.querySelectorAll(".mes-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      // Quitamos clase active de todos
+      document.querySelectorAll(".mes-btn").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+
+      const mes = btn.dataset.mes;
+      const ganancia = reportes[mes] || 0;
+
+      document.getElementById("resultadoMes").innerHTML = `
+        <h3>📅 ${btn.innerText}</h3>
+        <p><strong>Ganancia Estimada:</strong> $${ganancia.toFixed(2)}</p>
+      `;
+    });
+  });
+
+  return; // Para que no sobrescriba content.innerHTML abajo
+}
+
+
+  content.innerHTML = html;
+};
+
+
+// === MODALES ===
+window.openBuyModal = (id,nombre,precioC,precioV,stockActual) => {
+  openModal(`
+    <label>Producto</label>
+    <input type="text" value="${nombre}" disabled>
+    <label>Cantidad a comprar</label>
+    <input type="number" id="buyQty" min="1" max="100">
+    <button class="btn-primary" onclick="confirmPurchase('${id}',${precioC},${precioV})">Confirmar Compra</button>
+  `,"Comprar Producto");
+};
+
+window.confirmPurchase = async (id,precioC,precioV)=>{
+  const qty = Number(document.getElementById("buyQty").value);
+  if(!qty || qty<=0) { alert("Cantidad inválida"); return; }
+  const prodRef = doc(db,"productos",id);
+  const prodSnap = await getDoc(prodRef);
+  const nuevoStock = prodSnap.data().stock + qty;
+  await updateDoc(prodRef, { stock: nuevoStock });
+  await addDoc(collection(db,"inventario"),{
+    idProducto:id,
+    nombreProducto:prodSnap.data().nombre,
+    cantidadMovimiento:qty,
+    stockActual:nuevoStock,
+    stockMinimo:5,
+    stockMaximo:100,
+    tipoMovimiento:"Entrada",
+    descripcion:"Reposición de inventario",
+    ultimaActualizacion:new Date()
+  });
+  alert("Compra registrada y stock actualizado");
+  closeModal();
+  openSection("compras");
+};
+
+// === PROVEEDORES ===
+window.openProviderModal = (nombre="",telefono="",id="")=>{
+  openModal(`
+    <label>Nombre</label>
+    <input type="text" id="provNombre" value="${nombre}">
+    <label>Teléfono</label>
+    <input type="text" id="provTelefono" value="${telefono}">
+    <button class="btn-primary btn-small" onclick="saveProvider('${id}')">Guardar Proveedor</button>
+  `, id ? "Editar Proveedor":"Nuevo Proveedor");
+};
+
+window.saveProvider = async (id)=>{
+  const nombre = document.getElementById("provNombre").value;
+  const telefono = document.getElementById("provTelefono").value;
+  if(!nombre || !telefono){ alert("Complete todos los campos"); return; }
+  if(id){
+    await updateDoc(doc(db,"proveedores",id), {nombre,telefono});
+  } else {
+    await addDoc(collection(db,"proveedores"), {nombre,telefono});
+  }
+  closeModal();
+  openSection("proveedores");
+};
+
+window.editProvider = (id,nombre,telefono)=> openProviderModal(nombre,telefono,id);
+window.deleteProvider = async (id)=>{
+  if(confirm("¿Eliminar proveedor?")){
+    await deleteDoc(doc(db,"proveedores",id));
+    openSection("proveedores");
+  }
+};
+
+// === GERENTES ===
+window.openManagerModal = ()=>{
+  openModal(`
+    <label>Nombre</label>
+    <input type="text" id="mgrNombre">
+    <label>Correo</label>
+    <input type="email" id="mgrCorreo">
+    <button class="btn-primary btn-small" onclick="saveManager()">Guardar Gerente</button>
+  `,"Nuevo Gerente");
+};
+
+window.saveManager = async ()=>{
+  const nombre = document.getElementById("mgrNombre").value;
+  const correo = document.getElementById("mgrCorreo").value;
+  if(!nombre||!correo){ alert("Complete todos los campos"); return; }
+  await addDoc(collection(db,"usuarios"), {nombre,correo,rol:"Gerente"});
+  closeModal();
+  openSection("gerentes");
+};
+
+window.deleteManager = async (id)=>{
+  if(confirm("¿Eliminar gerente?")){
+    await deleteDoc(doc(db,"usuarios",id));
+    openSection("gerentes");
+  }
+};
+
+// === FUNCIONES MODAL ===
+function openModal(body,title){
+  document.getElementById("modal-body").innerHTML = body;
+  document.getElementById("modal-title").innerText = title;
+  document.getElementById("modal").style.display = "flex";
+}
+function closeModal(){ document.getElementById("modal").style.display = "none"; }
+</script>
+
+</body>
+</html>

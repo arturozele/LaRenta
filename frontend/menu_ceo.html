@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Panel CEO - La Colonia</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+<style>
+:root {
+  --rojo: #D32F2F;
+  --rojo-oscuro: #B71C1C;
+  --verde-acento: #43A047;
+  --gris-claro: #F5F5F5;
+  --gris: #E0E0E0;
+  --texto: #1E1E1E;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: "Poppins", sans-serif;
+  margin: 0;
+  background: linear-gradient(135deg, #fff5f5, #fffaf9);
+  transition: background 0.5s;
+}
+
+header {
+  background: linear-gradient(90deg, #E57373, #D32F2F);
+  color: #fff;
+  padding: 15px 30px;
+  font-size: 26px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+  border-radius: 0 0 15px 15px;
+  transition: all 0.3s ease;
+}
+
+header span { text-align: center; flex: 1; }
+
+.logout-btn, .add-user-btn {
+  background: #fff;
+  color: var(--rojo-oscuro);
+  border: 2px solid var(--rojo-oscuro);
+  padding: 8px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.logout-btn { right: 30px; }
+.add-user-btn { right: 170px; }
+.logout-btn:hover, .add-user-btn:hover {
+  background: var(--rojo-oscuro);
+  color: #fff;
+  transform: translateY(-50%) scale(1.05);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+}
+
+.cards {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin: 20px;
+}
+
+.card {
+  background: linear-gradient(135deg, #fffafa, #ffeaea);
+  padding: 15px;
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  flex: 1 1 220px;
+  transition: transform 0.3s, box-shadow 0.3s;
+  cursor: pointer;
+}
+.card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 15px 25px rgba(0,0,0,0.15);
+}
+.card h3 { color: var(--rojo-oscuro); font-size: 20px; margin-bottom: 10px; }
+.card p { font-size: 16px; color: var(--texto); margin: 5px 0; font-weight: 500; }
+
+table { width: 100%; border-collapse: separate; border-spacing: 0 10px; background: transparent; margin: 20px 0; }
+table th, table td { padding: 14px 18px; text-align: left; background: #fff; border-radius: 10px; transition: transform 0.3s, box-shadow 0.3s, background 0.3s; }
+table th { background: var(--rojo); color: #fff; font-weight: 600; border-radius: 10px 10px 0 0; }
+table tr:hover td { background: #ffcdd2; transform: translateX(3px) scale(1.01); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
+
+.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); display: flex; justify-content: center; align-items: center; z-index: 999; }
+.modal-content { background: #fff; padding: 30px 25px; border-radius: 15px; width: 300px; display: flex; flex-direction: column; gap: 10px; }
+.modal-content input { padding: 10px; border-radius: 10px; border: 1px solid #ddd; }
+.modal-content button { padding: 10px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; background: linear-gradient(135deg, var(--rojo), var(--rojo-oscuro)); color: #fff; transition: transform 0.2s, background 0.3s; }
+.modal-content button:hover { transform: translateY(-1px); background: linear-gradient(135deg, var(--rojo-oscuro), var(--rojo)); }
+.hidden { display: none; }
+
+.chart-box {
+  width: 90%;
+  margin: 20px auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+}
+.chart-box h3 { margin: 0 0 10px; font-size: 20px; font-weight: 600; color: var(--rojo-oscuro); }
+</style>
+</head>
+<body>
+
+<header>
+<span>Panel CEO - Supermercado La Colonia</span>
+<button class="add-user-btn" onclick="abrirModal()">Registrar Gerente</button>
+<button class="logout-btn" onclick="signOutUser()">Cerrar sesión</button>
+</header>
+
+<!-- Modal para registrar gerente -->
+<div id="modalRegistro" class="modal hidden">
+<div class="modal-content">
+<h3>Registrar Gerente</h3>
+<input type="text" id="nombreGerente" placeholder="Nombre completo" />
+<input type="email" id="correoGerente" placeholder="Correo electrónico" />
+<input type="password" id="passGerente" placeholder="Contraseña" />
+<button onclick="registrarGerente()">Guardar</button>
+<button onclick="cerrarModal()">Cancelar</button>
+</div>
+</div>
+
+<main>
+<div class="cards">
+<div class="card" id="masVendidoCard">
+<h3>Producto más vendido del mes</h3>
+<p id="masVendidoNombre">Cargando...</p>
+<p id="masVendidoCantidad"></p>
+<p id="masVendidoTotal"></p>
+</div>
+
+<div class="card" id="menosVendidoCard">
+<h3>Producto menos vendido del mes</h3>
+<p id="menosVendidoNombre">Cargando...</p>
+<p id="menosVendidoCantidad"></p>
+<p id="menosVendidoTotal"></p>
+</div>
+
+<div class="card" style="flex: 1 1 300px; padding: 15px;">
+<h3 style="font-size:18px;">Ganancias</h3>
+<p style="font-size:14px;">Hoy: C$ <span id="gananciasDia">0.00</span></p>
+<p style="font-size:14px;">Semana: C$ <span id="gananciasSemana">0.00</span></p>
+<canvas id="grafica6Meses" width="250" height="120" style="width:100%; height:150px; margin-top:10px;"></canvas>
+</div>
+</div>
+
+<div class="chart-box">
+<h3>Ganancias vs Gastos del Mes</h3>
+<canvas id="graficaGananciasGastos"></canvas>
+</div>
+
+<h3>Empleados y Gerentes activos</h3>
+<table id="empleadosTable">
+<thead>
+<tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Turno</th></tr>
+</thead>
+<tbody>
+<tr><td colspan="4">Cargando...</td></tr>
+</tbody>
+</table>
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAc9Ci4KKE9HvkOotMit3YTHx1y0SOwC-Q",
+  authDomain: "licoreria-app-5d82b.firebaseapp.com",
+  projectId: "licoreria-app-5d82b",
+  storageBucket: "licoreria-app-5d82b.firebasestorage.app",
+  messagingSenderId: "880767387677",
+  appId: "1:880767387677:web:453f885262679bff705ef4",
+  measurementId: "G-LQVP3Q4VFH"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+/* SESIÓN */
+onAuthStateChanged(auth, user => { if(!user) window.location.href="index.html"; });
+window.signOutUser = () => { if(confirm("Cerrar sesión?")) signOut(auth).then(()=>window.location.href="index.html"); }
+
+/* Modal Gerente */
+window.abrirModal = ()=>document.getElementById("modalRegistro").classList.remove("hidden");
+window.cerrarModal = ()=>{document.getElementById("modalRegistro").classList.add("hidden");document.getElementById("nombreGerente").value="";document.getElementById("correoGerente").value="";document.getElementById("passGerente").value="";}
+window.registrarGerente = async () => {
+const nombre=document.getElementById("nombreGerente").value.trim();
+const correo=document.getElementById("correoGerente").value.trim();
+const pass=document.getElementById("passGerente").value.trim();
+if(!nombre||!correo||!pass){ alert("Todos los campos son obligatorios"); return; }
+try{
+const userCredential = await createUserWithEmailAndPassword(auth, correo, pass);
+await setDoc(doc(db,"usuarios",userCredential.user.uid),{nombre,correo,rol:"Gerente",fechaRegistro:new Date()});
+alert("Gerente registrado con éxito"); cerrarModal(); cargarEmpleados();
+}catch(e){ console.error(e); alert("Error al registrar: "+e.message);}
+};
+
+/* Cargar Empleados */
+async function cargarEmpleados(){
+try{
+const snapshot = await getDocs(collection(db,"usuarios"));
+const tbody = document.querySelector("#empleadosTable tbody");
+tbody.innerHTML="";
+if(snapshot.empty){ tbody.innerHTML=`<tr><td colspan="4">No hay usuarios</td></tr>`; return; }
+snapshot.forEach(docu=>{
+const u = docu.data();
+const tr=document.createElement("tr");
+tr.innerHTML=`<td>${u.nombre}</td><td>${u.correo}</td><td>${u.rol}</td><td>${u.turno||"-"}</td>`;
+tbody.appendChild(tr);
+});
+}catch(e){ console.error(e);}
+}
+
+/* Productos más y menos vendidos + Ganancias/Gastos */
+async function calcularVentasYGrafica(){
+const ventasSnapshot = await getDocs(collection(db,"ventas"));
+const productosMap={}, hoy=new Date(), mes=hoy.getMonth(), año=hoy.getFullYear();
+let gananciasDia=0, gananciasSemana=0, gananciasMes=0, gastosMes=0;
+
+ventasSnapshot.forEach(doc=>{
+const v = doc.data();
+if(!v.productos || !Array.isArray(v.productos)) 
+return;
+const fecha = v.fechaVenta.toDate();
+if(fecha.getMonth()===mes && fecha.getFullYear()===año) {
+v.productos.forEach(p=>{
+if(!productosMap[p.idProducto]) productosMap[p.idProducto]={nombre:p.nombre,cantidad:0,total:0};
+productosMap[p.idProducto].cantidad+=p.cantidad||0;
+productosMap[p.idProducto].total+=p.subtotal||0;
+});
+gananciasMes += v.total || 0;};
+if(fecha.toDateString()===hoy.toDateString()) gananciasDia += v.total || 0;
+const primerDiaSemana = new Date(hoy); primerDiaSemana.setDate(hoy.getDate()-hoy.getDay());
+if(fecha>=primerDiaSemana && fecha<=hoy) gananciasSemana += v.total ||0;});
+
+/* Productos más/menos vendidos */
+const productos = Object.values(productosMap);
+if(productos.length>0){
+productos.sort((a,b)=>b.cantidad-a.cantidad);
+const mas=productos[0], menos=productos[productos.length-1];
+document.getElementById("masVendidoNombre").textContent=mas.nombre;
+document.getElementById("masVendidoCantidad").textContent="Cantidad: "+mas.cantidad;
+document.getElementById("masVendidoTotal").textContent="Subtotal: C$ "+mas.total;
+document.getElementById("menosVendidoNombre").textContent=menos.nombre;
+document.getElementById("menosVendidoCantidad").textContent="Cantidad: "+menos.cantidad;
+document.getElementById("menosVendidoTotal").textContent="Subtotal: C$ "+menos.total;
+}else{
+document.getElementById("masVendidoNombre").textContent="No hay ventas este mes";
+document.getElementById("menosVendidoNombre").textContent="No hay ventas este mes";
+}
+
+/* Calcular gastos: leer preciosCompra de productos */
+const productosSnapshot = await getDocs(collection(db,"productos"));
+const precioCompraMap={};
+productosSnapshot.forEach(doc=>{const p=doc.data(); precioCompraMap[doc.id]=p.precioCompra||0;});
+
+/* Gastos mes */
+productos.forEach(p=>{
+gastosMes += (precioCompraMap[p.idProducto]||0)*p.cantidad;
+});
+
+/* Actualizar cards */
+document.getElementById("gananciasDia").textContent=gananciasDia.toFixed(2);
+document.getElementById("gananciasSemana").textContent=gananciasSemana.toFixed(2);
+
+/* Gráfica Ganancias vs Gastos */
+const ctx2=document.getElementById("graficaGananciasGastos").getContext("2d");
+if(window.chartGanGastos) window.chartGanGastos.destroy();
+window.chartGanGastos = new Chart(ctx2,{
+type:"bar",
+data:{
+labels:["Ganancias","Gastos"],
+datasets:[{data:[gananciasMes,gastosMes],backgroundColor:["#43A047","#D32F2F"],borderRadius:10}]
+},
+options:{responsive:true,plugins:{legend:{display:false},datalabels:{color:'#fff',anchor:'end',align:'end',formatter:v=>'C$ '+v.toFixed(2)}},scales:{y:{beginAtZero:true}}},plugins:[ChartDataLabels]
+});
+}
+
+/* Ganancias últimos 6 meses */
+async function calcularGanancias6Meses(){
+const snapshot = await getDocs(collection(db,"ventas"));
+const hoy=new Date();
+const mesesLabels=[], gananciasMeses=[];
+for(let i=5;i>=0;i--){ const fecha=new Date(hoy.getFullYear(),hoy.getMonth()-i,1); mesesLabels.push(fecha.toLocaleString('es-ES',{month:'short',year:'numeric'})); gananciasMeses.push(0); }
+snapshot.forEach(doc=>{
+const data=doc.data();
+if(!data.productos || !Array.isArray(data.productos)||!data.fechaVenta?.toDate) return;
+const fecha=data.fechaVenta.toDate();
+for(let i=0;i<6;i++){
+const mesIndex=new Date(hoy.getFullYear(),hoy.getMonth()-5+i,1);
+if(fecha.getMonth()===mesIndex.getMonth() && fecha.getFullYear()===mesIndex.getFullYear()){
+gananciasMeses[i]+=data.total||0;
+}
+}
+});
+const ctx=document.getElementById("grafica6Meses").getContext("2d");
+if(window.chart6Meses) window.chart6Meses.destroy();
+window.chart6Meses = new Chart(ctx,{
+type:'bar',
+data:{labels:mesesLabels,datasets:[{label:'Ganancias C$',data:gananciasMeses,backgroundColor:'#43A047',borderRadius:10,barPercentage:0.6}]},
+options:{responsive:true,plugins:{legend:{display:false},datalabels:{color:'#fff',anchor:'end',align:'end',formatter:v=>'C$ '+v.toFixed(2)}},scales:{y:{beginAtZero:true}}},plugins:[ChartDataLabels]
+});
+}
+
+// Inicializar
+cargarEmpleados();
+calcularVentasYGrafica();
+calcularGanancias6Meses();
+</script>
+</body>
+</html>

@@ -1,0 +1,409 @@
+<!-- Panel Gerente - La Colonia -->
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel Gerente - La Colonia</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --rojo: #D32F2F;
+  --rojo-oscuro: #B71C1C;
+  --gris-claro: #F5F5F5;
+  --texto: #1E1E1E;
+}
+* { box-sizing: border-box; }
+
+body {
+  font-family: "Poppins", sans-serif;
+  margin:0;
+  background: linear-gradient(135deg,#fff5f5,#fffaf9);
+}
+
+header {
+  background: linear-gradient(90deg,#E57373,#D32F2F);
+  color:#fff;
+  padding:15px 30px;
+  font-size:26px;
+  font-weight:600;
+  display:flex;
+  justify-content:flex-end; /* botones a la derecha */
+  align-items:center;
+  position:relative; /* necesario para centrar el título */
+  box-shadow:0 6px 15px rgba(0,0,0,0.1);
+}
+
+header span {
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  text-align:center;
+  flex:1;
+}
+
+.header-buttons {
+  display:flex;
+  gap:12px;
+}
+
+
+.logout-btn, .add-jt-btn, .add-product-btn {
+  padding:6px 12px;
+  font-size:13px;
+  border-radius:12px;
+  border:2px solid white;
+  font-weight:600;
+  cursor:pointer;
+  background:#fff;
+  color:var(--rojo-oscuro);
+  transition: transform 0.2s, background 0.3s; /* efecto hover */
+}
+
+.logout-btn:hover, .add-jt-btn:hover, .add-product-btn:hover {
+  transform: scale(1.05);
+  background: var(--rojo-oscuro);
+  color: #fff;
+}
+
+.cards { display:flex; gap:20px; margin:20px; flex-wrap:wrap; }
+.card {
+  background:#fff;
+  padding:20px;
+  border-radius:18px;
+  box-shadow:0 6px 15px rgba(0,0,0,0.1);
+  flex:1 1 260px;
+  cursor:pointer;
+}
+.card h3 { color:var(--rojo-oscuro); margin-bottom:8px; }
+
+table {
+  width:100%;
+  margin-top:20px;
+  border-collapse:separate;
+  border-spacing:0 10px;
+}
+th, td {
+  background:#fff;
+  padding:14px;
+  border-radius:10px;
+  text-align:left;
+}
+th { background:var(--rojo); color:white; }
+
+/* modal basic */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); display:flex; justify-content:center; align-items:center; z-index:999; }
+.modal { background:#fff; padding:18px; border-radius:12px; width:340px; max-width:95%; }
+.modal h3 { margin-top:0; }
+.modal input, .modal textarea, .modal select { width:100%; padding:8px; margin-bottom:8px; border:1px solid #ddd; border-radius:8px; }
+.btn-primary { background:var(--rojo); color:#fff; border:none; padding:10px; border-radius:10px; cursor:pointer; width:100%; }
+.btn-secondary { background:#eee; color:#333; border:none; padding:8px; border-radius:10px; cursor:pointer; width:100%; }
+
+@media (max-width:768px){ 
+  .header-buttons { flex-direction:column; gap:8px; }
+}
+</style>
+
+
+</head>
+<body>
+
+<header>
+  <span>Panel del Gerente</span>
+  <button class="add-product-btn" onclick="abrirModalProducto()">Agregar Producto</button>
+  <button class="add-jt-btn" onclick="abrirModalJT()">Registrar Jefe Turno</button>
+ <button class="logout-btn" onclick="signOutUser()">Cerrar sesión</button>
+</header>
+
+<div class="cards">
+  <div class="card">
+    <h3>Ganancias de la Semana</h3>
+    <p id="gananciaSemana">Cargando...</p>
+  </div>
+  <div class="card">
+    <h3>Total Productos en Inventario</h3>
+    <p id="totalInventario">Cargando...</p>
+  </div>
+</div>
+
+<h2 style="margin-left:20px;">Inventario</h2>
+<table id="tablaInventario">
+  <thead>
+    <tr>
+      <th>Producto</th>
+      <th>Precio Venta</th>
+      <th>Categoría</th>
+      <th>Cantidad</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td colspan="4">Cargando...</td></tr>
+  </tbody>
+</table>
+
+<h2 style="margin-left:20px; margin-top:35px;">Jefes de Turno</h2>
+<table id="tablaJT">
+  <thead>
+    <tr>
+      <th>Nombre</th>
+      <th>Correo</th>
+      <th>Turno</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td colspan="3">Cargando...</td></tr>
+  </tbody>
+</table>
+
+<!-- Modales -->
+<div id="modalProducto" class="modal-overlay" style="display:none;">
+  <div class="modal">
+    <h3>Nuevo Producto</h3>
+    <input id="pNombre" placeholder="Nombre">
+    <input id="pPrecioVenta" placeholder="Precio Venta" type="number">
+    <input id="pPrecioCompra" placeholder="Precio Compra" type="number">
+    <input id="pCategoria" placeholder="Categoría">
+    <input id="pStock" placeholder="Stock" type="number">
+    <input id="pUnidad" placeholder="Unidad de medida (ej: botella)">
+    <textarea id="pDescripcion" placeholder="Descripción" rows="3"></textarea>
+    <button class="btn-primary" onclick="guardarProducto()">Guardar</button>
+    <button class="btn-secondary" onclick="cerrarModalProducto()">Cancelar</button>
+  </div>
+</div>
+
+<div id="modalJT" class="modal-overlay" style="display:none;">
+  <div class="modal">
+    <h3>Registrar Jefe de Turno</h3>
+    <input id="jtNombre" placeholder="Nombre">
+    <input id="jtCorreo" placeholder="Correo" type="email">
+    <select id="jtTurno">
+      <option value="">Seleccione turno</option>
+      <option value="6am-2pm">6am-2pm</option>
+      <option value="2pm-10pm">2pm-10pm</option>
+    </select>
+    <button class="btn-primary" onclick="guardarJT()">Guardar</button>
+    <button class="btn-secondary" onclick="cerrarModalJT()">Cancelar</button>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { 
+  getFirestore, 
+  collection, 
+  getDocs, 
+  getDoc, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  doc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+import { 
+  getAuth, 
+  signOut, 
+  onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAc9Ci4KKE9HvkOotMit3YTHx1y0SOwC-Q",
+  authDomain: "licoreria-app-5d82b.firebaseapp.com",
+  projectId: "licoreria-app-5d82b",
+  storageBucket: "licoreria-app-5d82b.firebasestorage.app",
+  messagingSenderId: "880767387677",
+  appId: "1:880767387677:web:453f885262679bff705ef4",
+  measurementId: "G-LQVP3Q4VFH"
+};
+
+// Inicializar Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+// ------------------------------
+//  EJEMPLO: CREAR PRODUCTO
+// ------------------------------
+export async function agregarProducto(nombre, precio, stock) {
+  try {
+    await addDoc(collection(db, "productos"), {
+      nombre,
+      precio,
+      stock,
+      fechaCreacion: serverTimestamp(), // ← YA FUNCIONA
+    });
+
+    console.log("Producto creado con éxito");
+    return true;
+  } catch (error) {
+    console.error("Error al crear producto:", error);
+    return false;
+  }
+}
+
+
+/* ————— VERIFICAR SESIÓN ACTIVA ————— */
+onAuthStateChanged(auth, user => {
+  if (!user) {
+    window.location.href = "index.html";
+  }
+});
+
+/* ————— FUNCIÓN LOGOUT ————— */
+window.signOutUser = function () {
+  if (confirm("¿Deseas cerrar sesión?")) {
+    signOut(auth)
+      .then(() => {
+        window.location.href = "index.html";
+      })
+      .catch(err => {
+        console.error("Error en signOut:", err);
+        alert("Error al cerrar sesión");
+      });
+  }
+};
+// modal controls
+window.abrirModalProducto = () => document.getElementById('modalProducto').style.display = 'flex';
+window.cerrarModalProducto = () => document.getElementById('modalProducto').style.display = 'none';
+window.abrirModalJT = () => document.getElementById('modalJT').style.display = 'flex';
+window.cerrarModalJT = () => document.getElementById('modalJT').style.display = 'none';
+
+// guardar producto con la estructura completa
+window.guardarProducto = async () => {
+  const nombre = document.getElementById('pNombre').value.trim();
+  const precioVenta = Number(document.getElementById('pPrecioVenta').value);
+  const precioCompra = Number(document.getElementById('pPrecioCompra').value);
+  const categoria = document.getElementById('pCategoria').value.trim();
+  const stock = Number(document.getElementById('pStock').value);
+  const unidadMedida = document.getElementById('pUnidad').value.trim();
+  const descripcion = document.getElementById('pDescripcion').value.trim();
+
+  if(!nombre || !precioVenta || !precioCompra || !categoria || isNaN(stock)){
+    alert('Complete todos los campos obligatorios');
+    return;
+  }
+
+  try{
+    await addDoc(collection(db,'productos'),{
+      activo: true,
+      categoria,
+      descripcion,
+      fechaRegistro: serverTimestamp(),
+      nombre,
+      precioCompra,
+      precioVenta,
+      stock,
+      unidadMedida
+    });
+    alert('Producto creado Correctamente');
+    cerrarModalProducto();
+    cargarInventario();
+  }catch(e){ console.error(e); alert('Error al crear producto: '+e.message); }
+};
+
+// guardar Jefe de Turno — crea usuario en Auth y documento en usuarios con UID
+window.guardarJT = async () => {
+  const nombre = jtNombre.value.trim();
+  const correo = jtCorreo.value.trim();
+  const turno = jtTurno.value.trim();
+
+  if (!nombre || !correo || !turno) {
+    alert("Completa todos los campos.");
+    return;
+  }
+
+  try {
+    const tempPass = "C0lonia" + Math.floor(Math.random() * 900 + 100); // Password temporal
+    const userCred = await createUserWithEmailAndPassword(auth, correo, tempPass);
+
+    await setDoc(doc(db, "usuarios", userCred.user.uid), {
+      nombre,
+      correo,
+      turno,
+      rol: "Jefe de Turno",
+      activo: true,
+      fechaRegistro: new Date().toISOString()
+    });
+
+    alert(`Jefe de Turno creado correctamente.
+Correo: ${correo}
+Contraseña temporal: ${tempPass}
+Pide al usuario cambiar la contraseña.`);
+
+    cerrarModalJT();
+    cargarJT();
+
+  } catch (e) {
+    console.error(e);
+    alert("Error al crear Jefe: " + e.message);
+  }
+};
+
+
+// cargar inventario (productos)
+async function cargarInventario(){
+  try{
+    const snap = await getDocs(collection(db,'productos'));
+    const tbody = document.querySelector('#tablaInventario tbody');
+    tbody.innerHTML = '';
+    if(snap.empty) { tbody.innerHTML = '<tr><td colspan="4">No hay productos</td></tr>'; return; }
+    let totalStock = 0;
+    snap.forEach(d=>{
+      const p = d.data();
+      const nombre = p.nombre || '-';
+      const precio = p.precioVenta ?? p.precio ?? 0;
+      const categoria = p.categoria || '-';
+      const cantidad = p.stock ?? p.cantidad ?? 0;
+      totalStock += Number(cantidad);
+      tbody.innerHTML += `<tr><td>${nombre}</td><td>C$ ${precio}</td><td>${categoria}</td><td>${cantidad}</td></tr>`;
+    });
+    document.getElementById('totalInventario').textContent = totalStock + ' unidades';
+  }catch(e){ console.error(e); document.querySelector('#tablaInventario tbody').innerHTML = '<tr><td colspan="4">Error al cargar inventario</td></tr>'; }
+}
+
+// cargar jefes de turno desde usuarios (rol == 'Jefe de Turno')
+async function cargarJT(){
+  try{
+    const usersRef = collection(db,'usuarios');
+    const q = query(usersRef, where('rol','==','Jefe de Turno'));
+    const snap = await getDocs(q);
+    const tbody = document.querySelector('#tablaJT tbody');
+    tbody.innerHTML = '';
+    if(snap.empty) { tbody.innerHTML = '<tr><td colspan="3">No hay jefes de turno</td></tr>'; return; }
+    snap.forEach(d=>{
+      const u = d.data();
+      const nombre = u.nombre || '-';
+      const correo = u.correo || u.email || '-';
+      const turno = u.turno || '-';
+      tbody.innerHTML += `<tr><td>${nombre}</td><td>${correo}</td><td>${turno}</td></tr>`;
+    });
+  }catch(e){ console.error(e); document.querySelector('#tablaJT tbody').innerHTML = '<tr><td colspan="3">Error al cargar jefes</td></tr>'; }
+}
+
+// calcular ganancias de la semana
+async function calcularGananciasSemana(){
+  try{
+    const ventasSnap = await getDocs(collection(db,'ventas'));
+    const now = new Date();
+    const sevenDaysAgo = new Date(); sevenDaysAgo.setDate(now.getDate() - 7);
+    let total = 0;
+    ventasSnap.forEach(d=>{
+      const v = d.data();
+      const fecha = v.fechaVenta && v.fechaVenta.toDate ? v.fechaVenta.toDate() : (v.fechaVenta ? new Date(v.fechaVenta) : null);
+      if(!fecha) return;
+      if(fecha >= sevenDaysAgo && fecha <= now){
+        total += Number(v.total || 0);
+      }
+    });
+    document.getElementById('gananciaSemana').textContent = 'C$ ' + total;
+  }catch(e){ console.error(e); document.getElementById('gananciaSemana').textContent = 'Error al calcular'; }
+}
+
+// inicializar
+calcularGananciasSemana();
+cargarInventario();
+cargarJT();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Historial de Logs</title>
+  <style>
+   body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1e1e2f, #121212);
+  color: #e0e0e0;
+  display: none;
+  line-height: 1.6;
+  background-attachment: fixed;
+}
+
+/* ===== Header ===== */
+header {
+  background: linear-gradient(135deg, #8b0000, #5a0000);
+  padding: 14px 20px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 20px;
+  color: #fff;
+}
+
+header button {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.btn-back {
+  background: #2196F3;
+  color: white;
+}
+
+.btn-back:hover {
+  background: #1976D2;
+}
+
+.logout {
+  background: linear-gradient(135deg, #0c0c0c, #1e1e1e);
+  color: white;
+}
+.logout:hover {
+  background: linear-gradient(135deg, #222, #000);
+}
+
+/* ===== Container ===== */
+.container {
+  padding: 22px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+h2 {
+  text-align: center;
+  color: #fff;
+  margin-bottom: 20px;
+}
+
+/* ===== Tabla ===== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(255,255,255,0.05);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+th, td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+th {
+  background: linear-gradient(135deg, #8b0000, #5a0000);
+  color: #fff;
+}
+
+tr:hover {
+  background-color: rgba(255,255,255,0.05);
+}
+  </style>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, getDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAc9Ci4KKE9HvkOotMit3YTHx1y0SOwC-Q",
+      authDomain: "licoreria-app-5d82b.firebaseapp.com",
+      projectId: "licoreria-app-5d82b",
+      storageBucket: "licoreria-app-5d82b.firebasestorage.app",
+      messagingSenderId: "880767387677",
+      appId: "1:880767387677:web:453f885262679bff705ef4"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let profile = null;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+          window.location.href = "index.html";
+          return;
+        }
+
+        const docRef = doc(db, "usuarios", user.uid);
+        const docSnap = await getDoc(docRef);
+
+        if (!docSnap.exists() || docSnap.data().rol !== "admin") {
+          alert("Acceso denegado (no admin)");
+          await signOut(auth);
+          window.location.href = "index.html";
+          return;
+        }
+
+        profile = { uid: user.uid, ...docSnap.data() };
+        document.body.style.display = "block";
+        document.getElementById("adminName").innerText = profile.nombre;
+        cargarLogs();
+      });
+    });
+
+    async function cargarLogs() {
+      const cont = document.querySelector("#tablaLogs tbody");
+      cont.innerHTML = "";
+
+      try {
+        const snap = await getDocs(collection(db, "logs"));
+        let logs = [];
+        snap.forEach(d => logs.push({ id: d.id, ...d.data() }));
+
+        // Convertimos la fecha correctamente si es texto o timestamp
+        logs.forEach(l => {
+          if (l.fecha?.seconds) {
+            l._fechaOrden = new Date(l.fecha.seconds * 1000);
+          } else if (typeof l.fecha === "string") {
+            l._fechaOrden = new Date(l.fecha.replace(" a.m.", "").replace(" p.m.", ""));
+          } else {
+            l._fechaOrden = new Date();
+          }
+        });
+
+        // Orden descendente
+        logs.sort((a, b) => b._fechaOrden - a._fechaOrden);
+
+        logs.forEach(l => {
+          const tr = document.createElement("tr");
+          const fecha = l.fecha?.seconds
+            ? new Date(l.fecha.seconds * 1000).toLocaleString()
+            : l.fecha || "—";
+
+          tr.innerHTML = `
+            <td>${l.nombre || "—"}</td>
+            <td>${fecha}</td>
+            <td>${l.sucursal || "—"}</td>
+            <td>${l.accion || "—"}</td>
+          `;
+          cont.appendChild(tr);
+        });
+
+        if (logs.length === 0) {
+          cont.innerHTML = `<tr><td colspan="4">No hay registros disponibles.</td></tr>`;
+        }
+
+      } catch (e) {
+        console.error("Error al cargar logs:", e);
+        cont.innerHTML = `<tr><td colspan="4" style="color:red;">Error al cargar registros.</td></tr>`;
+      }
+    }
+
+    window.volver = () => {
+      window.location.href = "menu_admin.html";
+    }
+
+    window.logout = async () => {
+      await signOut(auth);
+      window.location.href = "index.html";
+    }
+  </script>
+</head>
+<body>
+  <header>
+    <h1>Historial de Logs</h1>
+    <div>
+      <strong id="adminName">---</strong>
+      <button class="btn-back" onclick="volver()">Volver al Panel</button>
+      <button class="logout" onclick="logout()">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <h2>Registros del sistema</h2>
+    <table id="tablaLogs">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Fecha</th>
+          <th>Sucursal</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</body>
+</html>

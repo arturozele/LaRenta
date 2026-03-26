@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Menu Admin</title>
+  <style>
+   body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1e1e2f, #121212); /* fondo oscuro elegante */
+  color: #e0e0e0; /* texto claro */
+  display: none; /* se mostrará después de validar */
+  
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+
+  /* extra: toque realista */
+  background-attachment: fixed; /* efecto parallax suave */
+}
+
+    header { 
+  background: linear-gradient(135deg, #8b0000, #5a0000); /* degradado moderno */
+  padding: 14px 20px; 
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.4); /* sombra más realista */
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  position: sticky; /* se mantiene arriba al hacer scroll */
+  top: 0;
+  z-index: 1000;
+}
+
+  header h1 { 
+  margin: 0; 
+  font-size: 20px; 
+  color: #fff;
+}
+
+.container { 
+  padding: 22px; 
+  max-width: 1100px; 
+  margin: 0 auto; 
+}
+
+.dashboard { 
+  display: flex; 
+  gap: 16px; 
+  margin-bottom: 22px; 
+  flex-wrap: wrap; 
+}
+
+
+.card { 
+  border-radius: 12px; 
+  padding: 16px; 
+  flex: 1 1 200px; 
+  min-width: 180px;
+  cursor: pointer;
+  color: #fff;
+  transition: transform 0.3s, box-shadow 0.3s;
+  background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(0,0,0,0.2)); 
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+  backdrop-filter: blur(4px);
+}
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.4);
+}
+
+
+.sucursal-Managua { 
+  background: linear-gradient(135deg, #388e3c, #1b5e20); 
+  box-shadow: 0 6px 15px rgba(56, 142, 60, 0.35);
+}
+
+.sucursal-Diriamba { 
+  background: linear-gradient(135deg, #1976d2, #0d47a1); 
+  box-shadow: 0 6px 15px rgba(25, 118, 210, 0.35);
+}
+
+.sucursal-Jinotepe { 
+  background: linear-gradient(135deg, #7b1fa2, #4a148c); 
+  box-shadow: 0 6px 15px rgba(123, 31, 162, 0.35);
+}
+
+.sucursal-Dolores { 
+  background: linear-gradient(135deg, #00897b, #004d40); 
+  box-shadow: 0 6px 15px rgba(0, 137, 123, 0.35);
+}
+
+
+.card h3 { 
+  margin-top: 0; 
+  font-size: 16px; 
+  font-weight: 600;
+}
+
+/* ==== Tarjetas de peticiones ==== */
+.peticion-card { 
+  background: linear-gradient(135deg, #2c0a0a, #430808); 
+  border-radius: 12px; 
+  padding: 16px; 
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4); 
+  margin-bottom: 16px; 
+  color: #eee;
+}
+
+/* ==== Textarea oscuro ==== */
+textarea { 
+  width: 100%; 
+  min-height: 64px; 
+  padding: 10px; 
+  border-radius: 8px; 
+  border: 1px solid #444; 
+  background: #1e1e2f;
+  color: #e0e0e0; 
+  box-sizing: border-box; 
+  margin-top: 8px;
+  resize: vertical;
+}
+textarea:focus {
+  outline: none;
+  border-color: #4da6ff;
+}
+
+/* ==== Botones ==== */
+.btn { 
+  padding: 8px 14px; 
+  border-radius: 8px; 
+  border: none; 
+  cursor: pointer; 
+  font-weight: 600; 
+  margin-top: 6px; 
+  transition: transform 0.2s ease, background 0.3s ease;
+}
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+/* Colores de botones */
+.btn-respond { background: linear-gradient(135deg, #4CAF50, #2e7d32); color: #fff; } 
+.btn-att { background: linear-gradient(135deg, #1e8be5, #1565c0); color: #fff; } 
+.btn-del { background: linear-gradient(135deg, #ff0000, #b71c1c); color: #fff; }
+.logout { 
+  background: linear-gradient(135deg, #0c0c0c, #1e1e1e); 
+  color: white; 
+  padding: 8px 12px; 
+  border: none; 
+  border-radius: 6px; 
+  cursor: pointer; 
+  transition: background 0.3s ease;
+}
+.logout:hover {
+  background: linear-gradient(135deg, #222, #000);
+}
+.menu {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.menu span {
+  font-weight:700;
+  color:#222;
+  margin-right:10px;
+}
+.menu button {
+  padding:8px 12px;
+  border-radius:6px;
+  border:none;
+  font-weight:600;
+  cursor:pointer;
+  transition: background 0.3s;
+}
+.btn-logout { background:#555; color:white; }
+.btn-info { background:#2196F3; color:white; }
+.btn-info:hover { background:#1976D2; }
+.btn-legal { background:#9C27B0; color:white; }
+.btn-legal:hover { background:#7B1FA2; }
+  </style>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, getDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyAc9Ci4KKE9HvkOotMit3YTHx1y0SOwC-Q",
+      authDomain: "licoreria-app-5d82b.firebaseapp.com",
+      projectId: "licoreria-app-5d82b",
+      storageBucket: "licoreria-app-5d82b.firebasestorage.app",
+      messagingSenderId: "880767387677",
+      appId: "1:880767387677:web:453f885262679bff705ef4"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    let profile = null;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      onAuthStateChanged(auth, async (user) => {
+        if(!user){
+          window.location.href = "index.html";
+          return;
+        }
+
+        const docRef = doc(db, "usuarios", user.uid);
+        const docSnap = await getDoc(docRef);
+
+        if(!docSnap.exists() || docSnap.data().rol !== "admin"){
+          alert("Acceso denegado (no admin)");
+          await signOut(auth);
+          window.location.href = "index.html";
+          return;
+        }
+
+        profile = { uid:user.uid, ...docSnap.data() };
+        document.getElementById("adminName").innerText = profile.nombre;
+        document.body.style.display = "block";
+
+        renderMiniDashboards();
+        listarPeticiones();
+      });
+    });
+
+    async function renderMiniDashboards(){
+      const cont = document.getElementById("dashboards");
+      const sucursales = ["Managua","Diriamba","Jinotepe","Dolores"];
+      sucursales.forEach(s => {
+        const q = query(collection(db,"peticiones"), where("sucursal","==",s));
+        onSnapshot(q, snap => {
+          let card = document.getElementById("card-"+s);
+          if(!card){
+            card = document.createElement("div");
+            card.className = `card sucursal-${s}`;
+            card.id = "card-"+s;
+            card.addEventListener("click", () => { mostrarPeticionesSucursal(s); });
+            cont.appendChild(card);
+          }
+          card.innerHTML = `<h3>${s}</h3><p>Peticiones: ${snap.size}</p>`;
+        });
+      });
+    }
+
+    async function listarPeticiones(){
+      const q = collection(db,"peticiones");
+      onSnapshot(q, snapshot => {
+        const cont = document.getElementById("listaPeticiones");
+        cont.innerHTML = "";
+        snapshot.forEach(docSnap => {
+          const d = docSnap.data();
+          const card = document.createElement("div");
+          card.className = "peticion-card";
+          card.innerHTML = `
+            <strong>${d.nombreGerente} — ${d.sucursal}</strong> <br>
+            Atendida: ${d.atendida ? "✅" : "❌"} <br>
+            <div style="margin-top:6px;">Mensaje: ${escapeHtml(d.mensaje)}</div>
+            <textarea id="resp-${docSnap.id}" placeholder="Escribe respuesta...">${d.respuesta || ''}</textarea>
+            <div style="margin-top:6px;">
+              <button class="btn btn-respond" onclick="responder('${docSnap.id}')">Responder</button>
+              <button class="btn btn-att" onclick="marcarAtendida('${docSnap.id}')">Marcar atendida</button>
+              <button class="btn btn-del" onclick="eliminarPet('${docSnap.id}')">Eliminar</button>
+            </div>
+          `;
+          cont.appendChild(card);
+        });
+      });
+    }
+
+    function mostrarPeticionesSucursal(sucursal){
+      const q = query(collection(db,"peticiones"), where("sucursal","==",sucursal));
+      onSnapshot(q, snap => {
+        const cont = document.getElementById("listaPeticiones");
+        cont.innerHTML = `<h3>Peticiones de ${sucursal}</h3>`;
+        snap.forEach(docSnap => {
+          const d = docSnap.data();
+          const card = document.createElement("div");
+          card.className = "peticion-card";
+          card.innerHTML = `
+            <strong>${d.nombreGerente} — ${d.sucursal}</strong> <br>
+            Atendida: ${d.atendida ? "✅" : "❌"} <br>
+            <div style="margin-top:6px;">Mensaje: ${escapeHtml(d.mensaje)}</div>
+            <textarea id="resp-${docSnap.id}" placeholder="Escribe respuesta...">${d.respuesta || ''}</textarea>
+            <div style="margin-top:6px;">
+              <button class="btn btn-respond" onclick="responder('${docSnap.id}')">Responder</button>
+              <button class="btn btn-att" onclick="marcarAtendida('${docSnap.id}')">Marcar atendida</button>
+              <button class="btn btn-del" onclick="eliminarPet('${docSnap.id}')">Eliminar</button>
+            </div>
+          `;
+          cont.appendChild(card);
+        });
+      });
+    }
+
+    window.responder = async (id) => {
+      const txt = document.getElementById("resp-"+id).value.trim();
+      if(!txt){ alert("Escribe una respuesta"); return; }
+      await updateDoc(doc(db,"peticiones",id), { respuesta: txt, atendida: true });
+      alert("Respuesta guardada ✅");
+    };
+
+    window.marcarAtendida = async (id) => {
+      await updateDoc(doc(db,"peticiones",id), { atendida:true });
+    };
+
+    window.eliminarPet = async (id) => {
+      if(!confirm("¿Eliminar esta petición?")) return;
+      await deleteDoc(doc(db,"peticiones",id));
+    };
+
+    window.logout = async () => {
+      await signOut(auth);
+      localStorage.removeItem("user");
+      window.location.href = "index.html";
+    };
+
+    function escapeHtml(s){ return String(s||'').replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;"); }
+  </script>
+</head>
+<body>
+  <header>
+  <h1>Bienvenido</h1>
+  <div>
+    <strong id="adminName">---</strong>
+    <button class="btn btn-info" onclick="irA('informacionlegal.html')">Política</button>
+    <button class="btn btn-info" onclick="irA('historial_logs.html')">Logs</button>
+    <button class="logout" onclick="logout()">Cerrar sesión</button>
+  </div>
+</header>
+
+<script>
+  function irA(pagina){
+    window.location.href = pagina;
+  }
+</script>
+
+  <div class="container">
+    <h2>Mini Dashboards</h2>
+    <div class="dashboard" id="dashboards"></div>
+
+    <h2>Peticiones</h2>
+    <div id="listaPeticiones"></div>
+  </div>
+</body>
+</html>

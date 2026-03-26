@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel Gerente</title>
+ <style>
+/* ==== General ==== */
+body { 
+  font-family: 'Segoe UI', sans-serif; 
+  margin: 0; 
+  background: linear-gradient(135deg, #2c3e50, #3498db); /* degradado elegante */
+  color: #f5f5f5; 
+  display: none; /* ocultamos hasta validar login */
+  line-height: 1.6;
+}
+
+/* ==== Header ==== */
+header { 
+  background: #1a1a1a; 
+  padding: 14px 24px; 
+  box-shadow: 0 3px 12px rgba(0,0,0,0.3); 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+header h1 { 
+  margin: 0; 
+  font-size: 22px; 
+  color: #fff; 
+  font-weight: 600;
+}
+
+/* ==== Container ==== */
+.container { 
+  padding: 24px; 
+  max-width: 1000px; 
+  margin: 0 auto; 
+}
+
+/* ==== Tarjetas info ==== */
+.card { 
+  background: rgba(255, 255, 255, 0.06); 
+  border-radius: 14px; 
+  padding: 20px; 
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3); 
+  margin-bottom: 20px; 
+  backdrop-filter: blur(6px); /* efecto glass */
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.45);
+}
+.card h3 { 
+  margin-top: 0; 
+  color: #fff; 
+  font-size: 18px; 
+  font-weight: 500;
+}
+
+/* ==== Inputs y textarea ==== */
+input[type="text"], textarea { 
+  width: 100%; 
+  padding: 12px; 
+  border-radius: 10px; 
+  border: 1px solid #444; 
+  background: #1e1e2f; 
+  color: #eee; 
+  box-sizing: border-box; 
+  margin-top: 8px; 
+  transition: border 0.3s;
+}
+input:focus, textarea:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+/* ==== Botones ==== */
+.btn { 
+  display: inline-block; 
+  padding: 10px 18px; 
+  border-radius: 8px; 
+  border: none; 
+  cursor: pointer; 
+  font-weight: 600; 
+  margin-top: 10px;
+  transition: transform 0.2s, background 0.3s;
+}
+.btn:hover {
+  transform: translateY(-2px);
+}
+.btn-send { 
+  background: linear-gradient(135deg, #f39c12, #e67e22); 
+  color: #fff; 
+} 
+.btn-send:hover { 
+  background: linear-gradient(135deg, #ffa726, #ef6c00); 
+}
+.btn-logout { 
+  background: linear-gradient(135deg, #2c2c2c, #000); 
+  color: #fff; 
+}
+.btn-logout:hover { 
+  background: linear-gradient(135deg, #444, #111); 
+}
+
+/* ==== Lista de peticiones ==== */
+.pet-list .peticion { 
+  margin-bottom: 16px; 
+  padding: 16px; 
+  border-radius: 12px; 
+  background: rgba(255, 255, 255, 0.05); 
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+.pet-list .peticion:hover { 
+  transform: translateY(-3px); 
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+}
+.meta { 
+  font-size: 13px; 
+  color: #bbb; 
+  margin-top: 6px; 
+}
+</style>
+
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, query, where, onSnapshot, serverTimestamp, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAc9Ci4KKE9HvkOotMit3YTHx1y0SOwC-Q",
+      authDomain: "licoreria-app-5d82b.firebaseapp.com",
+      projectId: "licoreria-app-5d82b",
+      storageBucket: "licoreria-app-5d82b.firebasestorage.app",
+      messagingSenderId: "880767387677",
+      appId: "1:880767387677:web:453f885262679bff705ef4"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUser = null;
+    let profile = null;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      onAuthStateChanged(auth, async (u) => {
+        if(!u) { localStorage.removeItem("user"); window.location.href = "index.html"; return; }
+        currentUser = u;
+
+        const userDocRef = doc(db, "usuarios", u.uid);
+        const snap = await getDoc(userDocRef);
+        if(!snap.exists() || snap.data().rol !== "gerente"){
+          alert("Acceso denegado (no eres gerente)");
+          await signOut(auth);
+          window.location.href = "index.html";
+          return;
+        }
+
+        profile = { uid:u.uid, ...snap.data() };
+        document.getElementById("userName").innerText = profile.nombre;
+        document.getElementById("userSucursal").innerText = profile.sucursal;
+        document.body.style.display = "block";
+
+        // Escuchar peticiones del gerente
+        const q = query(collection(db, "peticiones"), where("userId","==",u.uid));
+        onSnapshot(q, snapshot => {
+          const list = document.getElementById("listaPeticiones");
+          list.innerHTML = "";
+          if(snapshot.empty) { list.innerHTML = "<p>No tienes peticiones aún.</p>"; return; }
+          snapshot.forEach(docSnap => {
+            const d = docSnap.data();
+            const ts = d.timestamp ? d.timestamp.toDate().toLocaleString() : "";
+            const el = document.createElement("div");
+            el.className = "peticion";
+            el.innerHTML = `
+              <strong>Mensaje:</strong> ${escapeHtml(d.mensaje)}<br>
+              <div class="meta">Sucursal: ${escapeHtml(d.sucursal)} • Enviado: ${ts}</div>
+              <div style="margin-top:6px;"><strong>Atendida:</strong> ${d.atendida ? "✅" : "❌"}</div>
+              <div style="margin-top:6px;"><strong>Respuesta Admin:</strong><br>${d.respuesta ? escapeHtml(d.respuesta) : "<em>En espera</em>"}</div>
+            `;
+            list.appendChild(el);
+          });
+        });
+      });
+    });
+
+    window.enviarPeticion = async () => {
+      const mensajeEl = document.getElementById("mensaje");
+      const mensaje = mensajeEl.value.trim();
+      if(!mensaje) return alert("Escribe tu petición");
+      await addDoc(collection(db, "peticiones"), {
+        userId: currentUser.uid,
+        nombreGerente: profile.nombre,
+        sucursal: profile.sucursal,
+        mensaje,
+        atendida: false,
+        respuesta: "",
+        timestamp: serverTimestamp()
+      });
+      mensajeEl.value = "";
+      alert("Petición enviada ✅");
+    };
+
+    window.logout = async () => {
+      await signOut(auth);
+      localStorage.removeItem("user");
+      window.location.href = "index.html";
+    };
+
+    function escapeHtml(s){ return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;"); }
+  </script>
+</head>
+<body>
+  <header>
+    <h1>Bienvenido Gerente</h1>
+    <div>
+    
+    <button class="btn btn-logout" onclick="logout()">Cerrar sesión</button></div>
+  </header>
+
+  <div class="container">
+    <div class="card" style="display:flex; gap:14px; align-items:center;">
+      <div>
+        <div><strong>Gerente:</strong> <span id="userName">—</span></div>
+        <div><strong>Sucursal:</strong> <span id="userSucursal">—</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Enviar petición</h3>
+      <input type="text" id="mensaje" placeholder="Describa lo que necesita..." />
+      <div>
+        <button class="btn btn-send" onclick="enviarPeticion()">Enviar petición</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Mis peticiones y respuestas</h3>
+      <div id="listaPeticiones" class="pet-list"></div>
+    </div>
+  </div>
+</body>
+</html>

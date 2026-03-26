@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Login - La Colonia</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+     :root {
+      --rojo: #C62828;
+      --rojo-oscuro: #B71C1C;
+      --gris-claro: #F4F6F8;
+      --texto: #1E1E1E;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: "Inter", "Poppins", sans-serif;
+      background: linear-gradient(135deg, var(--rojo), var(--rojo-oscuro));
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      background: #fff;
+      padding: 40px 45px 50px;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      width: 380px;
+      text-align: center;
+      animation: fadeIn 0.8s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .login-logo {
+      width: 120px;
+      height: auto;
+      margin-bottom: 15px;
+      user-select: none;
+      pointer-events: none;
+      animation: fadeInLogo 1s ease;
+    }
+
+    @keyframes fadeInLogo {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    h2 {
+      color: var(--rojo);
+      font-size: 22px;
+      margin-bottom: 20px;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px 14px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 14px;
+      color: var(--texto);
+      background-color: var(--gris-claro);
+      outline: none;
+      transition: border 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--rojo);
+      box-shadow: 0 0 6px rgba(198, 40, 40, 0.2);
+      background-color: #fff;
+    }
+
+    button {
+      width: 100%;
+      padding: 13px;
+      margin-top: 18px;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--rojo), var(--rojo-oscuro));
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transition: transform 0.2s, background 0.3s;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      background: linear-gradient(135deg, var(--rojo-oscuro), var(--rojo));
+    }
+
+    .toggle {
+      margin-top: 18px;
+      cursor: pointer;
+      color: var(--rojo);
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+
+    .toggle:hover {
+      color: var(--rojo-oscuro);
+      text-decoration: underline;
+    }
+
+    .hidden { display: none; }
+
+    @media (max-width: 480px) {
+      .container { width: 90%; padding: 30px 25px 40px; }
+      .login-logo { width: 100px; margin-bottom: 10px; }
+    }
+  </style>
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, setDoc, doc, getDoc, query, collection, getDocs, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAc9Ci4KKE9HvkOotMit3YTHx1y0SOwC-Q",
+      authDomain: "licoreria-app-5d82b.firebaseapp.com",
+      projectId: "licoreria-app-5d82b",
+      storageBucket: "licoreria-app-5d82b.firebasestorage.app",
+      messagingSenderId: "880767387677",
+      appId: "1:880767387677:web:453f885262679bff705ef4",
+      measurementId: "G-LQVP3Q4VFH"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const redirectByRole = (rol) => {
+      if (rol === "CEO") window.location.href = "menu_ceo.html";
+      else if (rol === "Administrador General") window.location.href = "menu_directiva.html";
+      else if (rol === "Gerente") window.location.href = "gerente.html";
+      else if (rol === "Jefe de Turno") window.location.href = "jefe_turno.html";
+      else if (rol === "Cajero") window.location.href = "panelCajero.html";
+    };
+
+    window.toggleForms = () => {
+      document.getElementById("loginForm").classList.toggle("hidden");
+      document.getElementById("registerForm").classList.toggle("hidden");
+    };
+
+    // LOGIN
+    window.login = async () => {
+      const correo = document.getElementById("loginCorreo").value.trim();
+      const password = document.getElementById("loginPassword").value.trim();
+      if (!correo || !password) return alert("Ingrese correo y contraseña");
+
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, correo, password);
+        const user = userCredential.user;
+        const docSnap = await getDoc(doc(db, "usuarios", user.uid));
+
+        if (docSnap.exists()) {
+          const userData = docSnap.data();
+          localStorage.setItem("user", JSON.stringify(userData));
+          redirectByRole(userData.rol);
+        } else alert("Usuario no encontrado.");
+      } catch (e) {
+        alert("Error en login: " + e.message);
+      }
+    };
+
+    // REGISTRO
+    window.register = async () => {
+      const nombre = document.getElementById("regNombre").value.trim();
+      const correo = document.getElementById("regCorreo").value.trim();
+      const password = document.getElementById("regPassword").value.trim();
+      const rol = document.getElementById("regRol").value;
+      const turno = document.getElementById("regTurno")?.value || null;
+
+      if (!nombre || !correo || !password || !rol) return alert("Complete todos los campos");
+
+      try {
+        if (rol === "CEO") {
+          const q = query(collection(db, "usuarios"), where("rol", "==", "CEO"));
+          const snap = await getDocs(q);
+          if (!snap.empty) return alert("Ya existe un CEO registrado.");
+        }
+
+        const userCredential = await createUserWithEmailAndPassword(auth, correo, password);
+        const user = userCredential.user;
+
+        const userData = {
+          nombre,
+          correo,
+          rol,
+          fechaRegistro: new Date().toISOString(),
+          ...(rol === "Jefe de Turno" && { turno })
+        };
+        await setDoc(doc(db, "usuarios", user.uid), userData);
+
+        if (rol === "Jefe de Turno") {
+          const turnoData = {
+            uid: user.uid,
+            nombre,
+            correo,
+            turno,
+            fechaRegistro: new Date().toISOString(),
+            estado: "Activo"
+          };
+          await setDoc(doc(db, "turnos", user.uid), turnoData);
+        }
+
+        alert("Usuario registrado con éxito 🎉");
+        toggleForms();
+      } catch (error) {
+        alert("Error en registro: " + error.message);
+      }
+    };
+  </script>
+</head>
+
+<body>
+  <div class="container">
+    <img src="data:image/png;base64,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" 
+         class="login-logo">
+
+    <!-- LOGIN -->
+    <div id="loginForm">
+      <h2>Iniciar Sesión</h2>
+      <input type="email" id="loginCorreo" placeholder="Correo">
+      <input type="password" id="loginPassword" placeholder="Contraseña">
+      <button onclick="login()">Ingresar</button>
+    </div>
+
+    <!-- REGISTRO -->
+    <div id="registerForm" class="hidden">
+      <h2>Registrar Usuario</h2>
+      <input type="text" id="regNombre" placeholder="Nombre completo">
+      <input type="email" id="regCorreo" placeholder="Correo">
+      <input type="password" id="regPassword" placeholder="Contraseña">
+      <select id="regRol">
+        <option value="">Seleccione rol</option>
+        <option value="Directiva">Directiva</option>
+        <option value="Gerente">Gerente</option>
+        <option value="Jefe de Turno">Jefe de Turno</option>
+        <option value="Empleado">Empleado</option>
+        <option value="Empleado">Cajero</option>
+      </select>
+      <select id="regTurno" class="hidden">
+        <option value="">Seleccione turno</option>
+        <option value="6am-2pm">6am-2pm</option>
+        <option value="2pm-10pm">2pm-10pm</option>
+      </select>
+      <button onclick="register()">Registrar</button>
+      <p class="toggle" onclick="toggleForms()">¿Ya tienes cuenta? Inicia sesión</p>
+    </div>
+  </div>
+
+  <script>
+    const regRol = document.getElementById("regRol");
+    const regTurno = document.getElementById("regTurno");
+    regRol.addEventListener("change", () => {
+      regTurno.classList.toggle("hidden", regRol.value !== "Jefe de Turno");
+    });
+  </script>
+</body>
+</html>
